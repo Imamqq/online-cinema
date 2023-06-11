@@ -4,19 +4,17 @@ import movieApi from '../../common/apis/movieApi';
 import { APIKey } from '../../common/apis/movieApiKey';
 
 export const fetchAsyncMovies = createAsyncThunk("movies/fetchAsyncMovies",
-    async () => {
-        const movieText = "Harry"
+    async (term) => {
         const response = await movieApi.get(
-            `?apiKey=${APIKey}&s=${movieText}&type=movie`
+            `?apiKey=${APIKey}&s=${term}&type=movie`
         )
         return response.data;
     })
 
 export const fetchAsyncShows = createAsyncThunk("movies/fetchAsyncShows",
-    async () => {
-        const seriesText = "Friends"
+    async (term) => {
         const response = await movieApi.get(
-            `?apiKey=${APIKey}&s=${seriesText}&type=series`
+            `?apiKey=${APIKey}&s=${term}&type=series`
         )
         return response.data;
     })
@@ -33,6 +31,7 @@ const initialState = {
     movies: {},
     shows: {},
     selectMovieOrShow: {},
+    isFetching: false,
 }
 
 const movieSlice = createSlice({
@@ -44,19 +43,20 @@ const movieSlice = createSlice({
         },
     },
     extraReducers: {
-        [fetchAsyncMovies.pending]: () => {
+        [fetchAsyncMovies.pending]: (state) => {
             console.log('pending')
+            state.isFetching = false
         },
         [fetchAsyncMovies.fulfilled]: (state, { payload }) => {
             console.log('Fetched success1')
-            return { ...state, movies: payload }
+            return { ...state, movies: payload, isFetching: true }
         },
         [fetchAsyncMovies.rejected]: () => {
             console.log('Rejected')
         },
         [fetchAsyncShows.fulfilled]: (state, { payload }) => {
             console.log('Fetched success2')
-            return { ...state, shows: payload }
+            return { ...state, shows: payload, isFetching: true }
         },
         [fetchAsyncDetail.fulfilled]: (state, { payload }) => {
             console.log('Fetched success3')
@@ -69,6 +69,7 @@ export const { removeSelectedMovieOrShow } = movieSlice.actions
 
 export const getAllMovies = (state) => state.movies.movies
 export const getAllShows = (state) => state.movies.shows
+export const fetching = (state) => state.movies.isFetching
 export const getSelectedMovieOrShow = (state) => state.movies.selectMovieOrShow
 
 export default movieSlice.reducer
